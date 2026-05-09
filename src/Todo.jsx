@@ -1,9 +1,8 @@
 import { useEffect } from "react";
-
 import "./Todo.css";
+
 function Todo({ task, onDelete, onToggle }) {
   useEffect(() => {
-    // Logic to run when the component mounts or updates
     console.log("Todo item updated:", task);
   }, [task]);
 

@@ -1,55 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Todo from './Todo';
-
 import './TodoApp.css';
-function TodoApp (){
-  const [tasks, setTasks] = useState([]);
+
+function TodoApp() {
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [text, setText] = useState("");
 
   const handleAddTask = (event) => {
     event.preventDefault();
-    if (text.trim() === "") return; // Prevent adding empty tasks
+    if (text.trim() === "") return;
     const newTask = {
       id: crypto.randomUUID(),
       text: text.trim(),
+      completed: false,   // important for toggle
     };
-    setTasks([...tasks, newTask]);
-    setText(""); // Clear the input field after adding a task
+    setTasks((prev) => [...prev, newTask]);
+    setText("");
   };
 
-  const handleInputChange = (event) => {
-    setText(event.target.value);
-  };
+  const handleInputChange = (event) => setText(event.target.value);
 
   const onDelete = (id) => {
-    // Logic to delete the todo item
-    const todoToDelete = tasks.find((item) => item.id === id);
-    if (todoToDelete) {
-      const updatedTodos = tasks.filter((item) => item.id !== id);
-      setTasks(updatedTodos);
-    }
+    setTasks((prev) => prev.filter((item) => item.id !== id));
   };
+
   const onToggle = (id) => {
-    // Logic to toggle the completed status of the todo item
-    const todoToToggle = tasks.find((item) => item.id === id);
-    if (todoToToggle) {
-      todoToToggle.completed = !todoToToggle.completed;
-      setTasks([...tasks]);
-    }
+    setTasks((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      )
+    );
   };
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   return (
-
-    <div  className="todo-app">
-      <input type="text" value={text} onChange={handleInputChange} placeholder="Add a new task" />
+    <div className="todo-app">
+      <input
+        type="text"
+        value={text}
+        onChange={handleInputChange}
+        placeholder="Add a new task"
+      />
       <button onClick={handleAddTask}>Add</button>
       <ul>
         {tasks.map((task) => (
-          <Todo key={task.id} task={task} setTodo={setTasks} onDelete={onDelete} onToggle={onToggle} />
+          <Todo
+            key={task.id}
+            task={task}
+            onDelete={onDelete}
+            onToggle={onToggle}
+          />
         ))}
       </ul>
     </div>
-  )
-} 
+  );
+}
 
 export default TodoApp;
